@@ -1,0 +1,791 @@
+---
+title: "Data and Programming in R"
+author: "PHAUK Sokkhey"
+format: html
+editor: visual
+---
+
+## 3.1 Data Types
+
+`R` has a number of basic data *types*.
+
+-   Numeric
+
+    -   Also known as Double. The default type when dealing with numbers.
+
+    -   Examples: `1`, `1.0`, `42.5`
+
+-   Integer
+
+    -   Examples: `1L`, `2L`, `42L`
+
+-   Complex
+
+    -   Example: `4 + 2i`
+
+-   Logical
+
+    -   Two possible values: `TRUE` and `FALSE`
+
+    -   You can also use `T` and `F`, but this is *not* recommended.
+
+    -   `NA` is also considered logical.
+
+-   Character
+
+    -   Examples: `"a"`, `"Statistics"`, `"1 plus 2."`
+
+## 3.2 Data Structures
+
+`R` also has a number of basic data *structures*. A data structure is either homogeneous (all elements are of the same data type) or heterogeneous (elements can be of more than one data type).
+
+| **Dimension** | **Homogeneous** | **Heterogeneous** |
+|---------------|-----------------|-------------------|
+| 1             | Vector          | List              |
+| 2             | Matrix          | Data Frame        |
+| 3+            | Array           |                   |
+
+### 3.2.1 Vectors
+
+Many operations in `R` make heavy use of **vectors**. Vectors in `R` are indexed starting at `1`. That is what the `[1]` in the output is indicating, that the first element of the row being displayed is the first element of the vector. Larger vectors will start additional rows with `[*]` where `*` is the index of the first element of the row.
+
+Possibly the most common way to create a vector in `R` is using the `c()` function, which is short for "combine." As the name suggests, it combines a list of elements separated by commas.
+
+```{r}
+c(1, 3, 5, 7, 8, 9)
+```
+
+Here `R` simply outputs this vector. If we would like to store this vector in a **variable**, we can do so with the **assignment** operator `=`. In this case the variable `x` now holds the vector we just created, and we can access the vector by typing `x`.
+
+```{r}
+x = c(1, 3, 5, 7, 8, 9)
+x
+```
+
+As an aside, there is a long history of the assignment operator in `R`, partially due to the keys available on the [keyboards of the creators of the `S` language.](https://twitter.com/kwbroman/status/747829864091127809) (Which preceded `R`.) For simplicity we will use `=`, but know that often you will see `<-` as the assignment operator.
+
+The pros and cons of these two are well beyond the scope of this book, but know that for our purposes you will have no issue if you simply use `=`. If you are interested in the weird cases where the difference matters, check out [The R Inferno](http://www.burns-stat.com/documents/books/the-r-inferno/).
+
+If you wish to use `<-`, you will still need to use `=`, however only for argument passing. Some users like to keep assignment (`<-`) and argument passing (`=`) separate. No matter what you choose, the more important thing is that you **stay consistent**. Also, if working on a larger collaborative project, you should use whatever style is already in place.
+
+Because vectors must contain elements that are all the same type, `R` will automatically coerce to a single type when attempting to create a vector that combines multiple types.
+
+```{r}
+c(42, "Statistics", TRUE)
+```
+
+```{r}
+c(42, TRUE)
+```
+
+Frequently you may wish to create a vector based on a sequence of numbers. The quickest and easiest way to do this is with the `:` operator, which creates a sequence of integers between two specified integers.
+
+```{r}
+(y = 1:100)
+```
+
+Here we see `R` labeling the rows after the first since this is a large vector. Also, we see that by putting parentheses around the assignment, `R` both stores the vector in a variable called `y` and automatically outputs `y` to the console.
+
+Note that scalars do not exist in `R`. They are simply vectors of length `1`.
+
+```{r}
+2
+```
+
+To create a sequence that is not limited to consecutive integers, use the `seq()` function to define a sequence by its start, end, and increment.
+
+```{r}
+seq(from = 1.5, to = 4.2, by = 0.1)
+```
+
+We will discuss functions in detail later, but note here that the input labels `from`, `to`, and `by` are optional.
+
+```{r}
+seq(1.5, 4.2, 0.1)
+```
+
+Another common operation to create a vector is `rep()`, which can repeat a single value a number of times.
+
+```{r}
+rep("A", times = 10)
+```
+
+The `rep()` function can be used to repeat a vector some number of times.
+
+```{r}
+rep(x, times = 3)
+```
+
+We have now seen four different ways to create vectors:
+
+-   `c()`
+
+-   `:`
+
+-   `seq()`
+
+-   `rep()`
+
+So far we have mostly used them in isolation, but they are often used together.
+
+```{r}
+c(x, rep(seq(1, 9, 2), 3), c(1, 2, 3), 42, 2:4)
+```
+
+The length of a vector can be obtained with the `length()` function.
+
+```         
+length(x)
+```
+
+```         
+## [1] 6
+```
+
+```         
+length(y)
+```
+
+```         
+## [1] 100
+```
+
+#### 3.2.1.1 Subsetting
+
+To subset a vector, we use square brackets, `[]`.
+
+```{r}
+x
+```
+
+```{r}
+x[1]
+```
+
+```{r}
+x[3]
+```
+
+We see that `x[1]` returns the first element, and `x[3]` returns the third element.
+
+```{r}
+x[-2]
+```
+
+We can also exclude certain indexes, in this case the second element.
+
+```{r}
+x[1:3]
+```
+
+```{r}
+x[c(1,3,4)]
+```
+
+Lastly we see that we can subset based on a vector of indices.
+
+All of the above are subsetting a vector using a vector of indexes. (Remember a single number is still a vector.) We could instead use a vector of logical values.
+
+```{r}
+z = c(TRUE, TRUE, FALSE, TRUE, TRUE, FALSE) 
+z
+```
+
+```{r}
+x[z]
+```
+
+### 3.2.2 Vectorization
+
+One of the biggest strengths of `R` is its use of vectorized operations. (Frequently the lack of understanding of this concept leads to a belief that `R` is *slow*. `R` is not the fastest language, but it has a reputation for being slower than it really is.)
+
+```{r}
+x = 1:10 
+x + 1
+```
+
+```{r}
+2*x
+```
+
+```{r}
+2^x
+```
+
+```{r}
+sqrt(x)
+```
+
+```{r}
+log(x)
+```
+
+We see that when a function like `log()` is called on a vector `x`, a vector is returned which has applied the function to each element of the vector `x`.
+
+### 3.2.3 Logical Operators
+
+| **Operator** | **Summary**                      | **Example**            | **Result** |
+|------------------|--------------------|------------------|------------------|
+| `x < y`      | `x` less than `y`                | `3 < 42`               | TRUE       |
+| `x > y`      | `x` greater than `y`             | `3 > 42`               | FALSE      |
+| `x <= y`     | `x` less than or equal to `y`    | `3 <= 42`              | TRUE       |
+| `x >= y`     | `x` greater than or equal to `y` | `3 >= 42`              | FALSE      |
+| `x == y`     | `x`equal to `y`                  | `3 == 42`              | FALSE      |
+| `x != y`     | `x` not equal to `y`             | `3 != 42`              | TRUE       |
+| `!x`         | not `x`                          | `!(3 > 42)`            | TRUE       |
+| `x | y`      | `x` or `y`                       | `(3 > 42) | TRUE`      | TRUE       |
+| `x & y`      | `x` and `y`                      | `(3 < 4) & ( 42 > 13)` | TRUE       |
+
+In `R`, logical operators are vectorized.
+
+```{r}
+x = c(1, 3, 5, 7, 8, 9)
+```
+
+```{r}
+x > 3
+```
+
+```{r}
+x < 3
+```
+
+```{r}
+x == 3
+```
+
+```{r}
+x != 3
+```
+
+```{r}
+x == 3 & x != 3
+```
+
+```{r}
+x == 3 | x != 3
+```
+
+This is extremely useful for subsetting.
+
+```{r}
+x[x > 3]
+```
+
+```{r}
+x[x != 3]
+```
+
+```{r}
+sum(x > 3)
+```
+
+```{r}
+as.numeric(x > 3)
+```
+
+Here we see that using the `sum()` function on a vector of logical `TRUE` and `FALSE` values that is the result of `x > 3` results in a numeric result. `R` is first automatically coercing the logical to numeric where `TRUE` is `1` and `FALSE` is `0`. This coercion from logical to numeric happens for most mathematical operations. If you are interested in more detail, check out [Advanced R](https://adv-r.hadley.nz/vectors-chap.html?q=coercion#testing-and-coercion).
+
+```{r}
+which(x > 3)
+```
+
+```{r}
+x[which(x > 3)]
+```
+
+```{r}
+max(x)
+```
+
+```{r}
+which(x == max(x))
+```
+
+```{r}
+which.max(x)
+```
+
+### 3.2.4 More Vectorization
+
+```{r}
+x = c(1, 3, 5, 7, 8, 9) 
+y = 1:100
+```
+
+```{r}
+x + 2
+```
+
+```{r}
+x + rep(2, 6)
+```
+
+```{r}
+x > 3
+```
+
+```{r}
+x > rep(3, 6)
+```
+
+```{r}
+x + y
+```
+
+```{r}
+length(x)
+```
+
+```{r}
+length(y)
+```
+
+```{r}
+length(y) / length(x)
+```
+
+```{r}
+(x + y) - y
+```
+
+```{r}
+y = 1:60 
+x + y
+```
+
+```{r}
+length(y) / length(x)
+```
+
+```{r}
+rep(x, 10) + y
+```
+
+```{r}
+all(x + y == rep(x, 10) + y)
+```
+
+```{r}
+identical(x + y, rep(x, 10) + y)
+```
+
+```{r}
+# ?any # ?all.equal
+```
+
+```{r}
+x = c(1, 3, 5) 
+y = c(1, 2, 4) 
+x == y
+```
+
+```{r}
+all(x == y)
+```
+
+```{r}
+any(x == y)
+```
+
+While `all` returns `TRUE` only when all of its arguments are `TRUE`, `any` returns `TRUE` when at least one of its arguments is `TRUE`.
+
+```{r}
+x = c(10 ^ (-8)) 
+y = c(10 ^ (-9)) 
+all(x == y)
+```
+
+```{r}
+all.equal(x, y)
+```
+
+The `all.equal` function tests "near equality" with a default tolerance value around `1.5e-8` and returns `TRUE` if all of its arguments have differences smaller than the tolerance.
+
+### 3.2.5 Matrices
+
+`R` can also be used for **matrix** calculations. Matrices have rows and columns containing a single data type. In a matrix, the order of rows and columns is important. (This is not true of *data frames*, which we will see later.)
+
+Matrices can be created using the `matrix` function.
+
+```{r}
+x = 1:9 
+x
+```
+
+```{r}
+X = matrix(x, nrow = 3, ncol = 3) 
+X
+```
+
+Note here that we are using two different variables: lower case `x`, which stores a vector and capital `X`, which stores a matrix. (Following the usual mathematical convention.) We can do this because `R` is case sensitive.
+
+By default the `matrix` function reorders a vector into columns, but we can also tell `R` to use rows instead.
+
+```{r}
+Y = matrix(x, nrow = 3, ncol = 3, byrow = TRUE) 
+Y
+```
+
+We can also create a matrix of a specified dimension where every element is the same, in this case `0`.
+
+```{r}
+Z = matrix(0, 2, 4) 
+Z
+```
+
+Like vectors, matrices can be subsetted using square brackets, `[]`. However, since matrices are two-dimensional, we need to specify both a row and a column when subsetting.
+
+```{r}
+X
+```
+
+```{r}
+X[1,2]
+```
+
+Here we accessed the element in the first row and the second column. We could also subset an entire row or column.
+
+```{r}
+X[1, ]
+```
+
+```{r}
+X[, 2]
+```
+
+We can also use vectors to subset more than one row or column at a time. Here we subset to the first and third column of the second row.
+
+```{r}
+X[2, c(1, 3)]
+```
+
+Matrices can also be created by combining vectors as columns, using `cbind`, or combining vectors as rows, using `rbind`.
+
+```{r}
+x = 1:9 
+rev(x)
+```
+
+```{r}
+rep(1, 9)
+```
+
+```{r}
+rbind(x, rev(x), rep(1, 9))
+```
+
+```{r}
+cbind(col_1 = x, col_2 = rev(x), col_3 = rep(1, 9))
+```
+
+When using `rbind` and `cbind` you can specify "argument" names that will be used as column names.
+
+`R` can then be used to perform matrix calculations.
+
+```{r}
+x = 1:9 
+y = 9:1 
+X = matrix(x, 3, 3) 
+Y = matrix(y, 3, 3) 
+X
+```
+
+```{r}
+Y
+```
+
+```{r}
+X + Y
+```
+
+```{r}
+X - Y
+```
+
+```{r}
+X*Y
+```
+
+```{r}
+X/Y
+```
+
+Note that `X * Y` is not matrix multiplication. It is element by element multiplication. (Same for `X / Y`). Instead, matrix multiplication uses `%*%`. Other matrix functions include `t()` which gives the transpose of a matrix and `solve()` which returns the inverse of a square matrix if it is invertible.
+
+```{r}
+X%*%Y
+```
+
+```{r}
+t(X)
+```
+
+```{r}
+Z=matrix(c(9, 2, -3, 2, 4, -2, -3, -2, 16), 3, byrow = TRUE) 
+Z
+```
+
+```{r}
+solve(Z)
+```
+
+To verify that `solve(Z)` returns the inverse, we multiply it by `Z`. We would expect this to return the identity matrix, however we see that this is not the case due to some computational issues. However, `R` also has the `all.equal()` function which checks for equality, with some small tolerance which accounts for some computational issues. The `identical()` function is used to check for exact equality.
+
+```{r}
+solve(Z) %*% Z
+```
+
+```{r}
+diag(3)
+```
+
+```{r}
+all.equal(solve(Z) %*% Z, diag(3))
+```
+
+`R` has a number of matrix specific functions for obtaining dimension and summary information.
+
+```{r}
+X = matrix(1:6, 2, 3) 
+X
+```
+
+```{r}
+dim(X)
+```
+
+```{r}
+rowSums(X)
+```
+
+```{r}
+colSums(X)
+```
+
+```{r}
+rowMeans(X)
+```
+
+```{r}
+colMeans(X)
+```
+
+The `diag()` function can be used in a number of ways. We can extract the diagonal of a matrix.
+
+```{r}
+diag(Z)
+```
+
+Or create a matrix with specified elements on the diagonal. (And `0` on the off-diagonals.)
+
+```{r}
+diag(1:5)
+```
+
+Or, lastly, create a square matrix of a certain dimension with `1` for every element of the diagonal and `0` for the off-diagonals.
+
+```{r}
+diag(5)
+```
+
+### 3.2.6 Lists
+
+A list is a one-dimensional heterogeneous data structure. So it is indexed like a vector with a single integer value, but each element can contain an element of any type.
+
+```         
+# creation list(42, "Hello", TRUE)
+```
+
+```{r}
+ex_list = list( a = c(1, 2, 3, 4),  b = TRUE, c = "Hello!",   d = function(arg = 42) {print("Hello World!")}, e = diag(5) )
+```
+
+Lists can be subset using two syntaxes, the `$` operator, and square brackets `[]`. The `$` operator returns a named **element** of a list. The `[]` syntax returns a **list**, while the `[[]]` returns an **element** of a list.
+
+-   `ex_list[1]` returns a list containing the first element.
+
+-   `ex_list[[1]]` returns the first element of the list, in this case, a vector.
+
+```         
+# subsetting ex_list$e
+```
+
+```{r}
+ex_list[1:2]
+```
+
+```{r}
+ex_list[1]
+```
+
+```{r}
+ex_list[[1]]
+```
+
+```{r}
+ex_list[c("e", "a")]
+```
+
+```{r}
+ex_list["e"]
+```
+
+```{r}
+ex_list[["e"]]
+```
+
+```{r}
+ex_list$d
+```
+
+```         
+## function(arg = 42) {print("Hello World!")}
+```
+
+```{r}
+ex_list$d(arg = 1)
+```
+
+### 3.2.7 Data Frames
+
+We have previously seen vectors and matrices for storing data as we introduced `R`. We will now introduce a **data frame** which will be the most common way that we store and interact with data in this course.
+
+```{r}
+example_data = data.frame(x = c(1, 3, 5, 7, 9, 1, 3, 5, 7, 9),                           y = c(rep("Hello", 9), "Goodbye"),                           z = rep(c(TRUE, FALSE), 5))
+```
+
+Unlike a matrix, which can be thought of as a vector rearranged into rows and columns, a data frame is not required to have the same data type for each element. A data frame is a **list** of vectors. So, each vector must contain the same data type, but the different vectors can store different data types.
+
+```{r}
+example_data
+```
+
+Unlike a list which has more flexibility, the elements of a data frame must all be vectors, and have the same length.
+
+```{r}
+example_data$x
+```
+
+```{r}
+all.equal(length(example_data$x),           length(example_data$y),length(example_data$z))
+```
+
+```{r}
+str(example_data)
+```
+
+```{r}
+nrow(example_data)
+```
+
+```{r}
+ncol(example_data)
+```
+
+```{r}
+dim(example_data)
+```
+
+The `data.frame()` function above is one way to create a data frame. We can also import data from various file types into `R`, as well as use data stored in packages.
+
+[The example data above can also be found here as a .csv file.](https://book.stat420.org/data/example-data.csv) To read this data into `R`, we would use the `read_csv()` function from the `readr` package. Note that `R` has a built-in function `read.csv()` that operates very similarly. The `readr` function `read_csv()` has a number of advantages. For example, it is much faster reading larger data. [It also uses the `tibble` package to read the data as a tibble.](https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html)
+
+```{r}
+library(readr) 
+# example_data_from_csv = read_csv("data/example-data.csv")
+```
+
+This particular line of code assumes that the file `example_data.csv` exists in a folder called `data` in your current working directory.
+
+```{r}
+# example_data_from_csv
+```
+
+A tibble is simply a data frame that prints with sanity. Notice in the output above that we are given additional information such as dimension and variable type.
+
+The `as_tibble()` function can be used to coerce a regular data frame to a tibble.
+
+```         
+library(tibble) 
+example_data = as_tibble(example_data) example_data
+```
+
+Alternatively, we could use the "Import Dataset" feature in RStudio which can be found in the environment window. (By default, the top-right pane of RStudio.) Once completed, this process will automatically generate the code to import a file. The resulting code will be shown in the console window. In recent versions of RStudio, `read_csv()` is used by default, thus reading in a tibble.
+
+Earlier we looked at installing packages, in particular the `ggplot2` package. (A package for visualization. While not necessary for this course, it is quickly growing in popularity.)
+
+```{r}
+library(ggplot2)
+```
+
+Inside the `ggplot2` package is a dataset called `mpg`. By loading the package using the `library()` function, we can now access `mpg`.
+
+When using data from inside a package, there are three things we would generally like to do:
+
+-   Look at the raw data.
+
+-   Understand the data. (Where did it come from? What are the variables? Etc.)
+
+-   Visualize the data.
+
+To look at the data, we have two useful commands: `head()` and `str()`.
+
+```{r}
+head(mpg, n = 10)
+```
+
+```{r}
+mpg
+```
+
+The function `str()` will display the "structure" of the data frame. It will display the number of **observations** and **variables**, list the variables, give the type of each variable, and show some elements of each variable. This information can also be found in the "Environment" window in RStudio.
+
+```{r}
+str(mpg)
+```
+
+It is important to note that while matrices have rows and columns, data frames (tibbles) instead have observations and variables. When displayed in the console or viewer, each row is an observation and each column is a variable. However generally speaking, their order does not matter, it is simply a side-effect of how the data was entered or stored.
+
+In this dataset an observation is for a particular model-year of a car, and the variables describe attributes of the car, for example its highway fuel efficiency.
+
+To understand more about the data set, we use the `?` operator to pull up the documentation for the data.
+
+```{r}
+?mpg
+```
+
+`R` has a number of functions for quickly working with and extracting basic information from data frames. To quickly obtain a vector of the variable names, we use the `names()` function.
+
+```{r}
+names(mpg)
+```
+
+To access one of the variables **as a vector**, we use the `$` operator.
+
+```{r}
+mpg$year
+```
+
+```{r}
+mpg$hwy
+```
+
+We can use the `dim()`, `nrow()` and `ncol()` functions to obtain information about the dimension of the data frame.
+
+```{r}
+dim(mpg)
+```
+
+```{r}         
+nrow(mpg)
+```
+```{r}         
+ncol(mpg)
+```
+
+Here `nrow()` is also the number of observations, which in most cases is the *sample size*.
+
+## References 
+
+This note is adopted from [Introduction to R](https://book.stat420.org/introduction-to-r.html)
