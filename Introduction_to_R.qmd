@@ -111,7 +111,7 @@ Frequently one of the most difficult things to do when learning `R` is asking fo
 
 If you follow these steps, you will get your issue resolved much quicker, and possibly learn more in the process. Do not be discouraged by running into errors and difficulties when learning R. (Or any technical skill.) It is simply part of the learning process.                                               
 
-# 2.4 Installing Packages
+# 1.4 Installing Packages
 
 `R` comes with a number of built-in functions and datasets, but one of the main strengths of `R` as an open-source project is its package system. Packages add additional functions and data. Frequently if you want to do something in `R`, and it is not available by default, there is a good chance that there is a package that will fulfill your needs.
 
